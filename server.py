@@ -34,3 +34,18 @@ def chat(message: str):
         "response": last_message.content,
         "message_type": str(type(last_message))
     }
+
+
+
+# This allows the app to run directly
+# and also works with Render deployment
+
+if __name__ == "__main__":
+
+    import uvicorn
+
+    uvicorn.run(
+        "server:app",
+        host="0.0.0.0",
+        port=8000
+    )
