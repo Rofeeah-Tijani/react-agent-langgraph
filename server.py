@@ -48,25 +48,11 @@ def chat(message: str):
 
     messages = result["messages"]
 
-    answer = ""
 
-    for msg in reversed(messages):
-        if msg.content:
-            answer = msg.content
-            break
+    # Get the final AI response
+    answer = messages[-1].content
 
 
     return {
         "response": answer
     }
-
-
-if __name__ == "__main__":
-
-    import uvicorn
-
-    uvicorn.run(
-        "server:app",
-        host="0.0.0.0",
-        port=8000
-    )
