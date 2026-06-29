@@ -19,14 +19,6 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-def home():
-    return {
-        "message": "AI Agent API is running",
-        "docs": "/docs"
-    }
-
-
 @app.post("/chat")
 def chat(message: str):
 
@@ -46,13 +38,11 @@ def chat(message: str):
     )
 
 
-    messages = result["messages"]
-
-
-    # Get the final AI response
-    answer = messages[-1].content
+    print("====================")
+    print(result)
+    print("====================")
 
 
     return {
-        "response": answer
+        "response": str(result)
     }
