@@ -1,114 +1,85 @@
-import { useState } from "react"
-
+import { useState } from "react";
 
 function App() {
-
-  const [message, setMessage] = useState("")
-  const [chat, setChat] = useState([])
-
+  const [message, setMessage] = useState("");
+  const [chat, setChat] = useState([]);
 
   async function sendMessage() {
+    if (!message.trim()) return;
 
-    if (!message.trim()) return
+    const userMessage = message;
 
-
-    const userMessage = message
-
-
-    setChat(prev => [
+    setChat((prev) => [
       ...prev,
       {
         role: "user",
-        content: userMessage
-      }
-    ])
+        content: userMessage,
+      },
+    ]);
 
+    setMessage("");
 
-    setMessage("")
+    try {
+      const response = await fetch(
+        "https://react-agent-langgraph.onrender.com/chat",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: userMessage,
+          }),
+        }
+      );
 
+      console.log("Status:", response.status);
 
-    const response = await fetch(
-      "https://react-agent-langgraph.onrender.com/chat",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
+      const data = await response.json();
+
+      console.log("API Response:", data);
+
+      setChat((prev) => [
+        ...prev,
+        {
+          role: "agent",
+          content: data.response,
         },
-        body: JSON.stringify({
-          message: userMessage
-        })
-      }
-    )
+      ]);
+    } catch (error) {
+      console.error("Fetch Error:", error);
 
-
-    const data = await response.json()
-
-
-    setChat(prev => [
-      ...prev,
-      {
-        role: "agent",
-        content: data.response
-      }
-    ])
-
+      setChat((prev) => [
+        ...prev,
+        {
+          role: "agent",
+          content: "An error occurred while contacting the server.",
+        },
+      ]);
+    }
   }
-
-
 
   return (
     <div>
-
-      <h1>
-        LangGraph AI Agent
-      </h1>
-
+      <h1>LangGraph AI Agent</h1>
 
       <div>
-
-        {
-          chat.map((item, index) => (
-
-            <p key={index}>
-
-              <b>
-                {item.role}:
-              </b>
-
-              {" "}
-
-              {item.content}
-
-            </p>
-
-          ))
-        }
-
+        {chat.map((item, index) => (
+          <p key={index}>
+            <b>{item.role}:</b> {item.content}
+          </p>
+        ))}
       </div>
 
-
-
       <input
-
         value={message}
-
-        onChange={
-          e => setMessage(e.target.value)
-        }
-
+        onChange={(e) => setMessage(e.target.value)}
         placeholder="Ask something..."
-
       />
 
-
-      <button onClick={sendMessage}>
-        Send
-      </button>
-
-
+      <button onClick={sendMessage}>Send</button>
     </div>
-  )
+  );
 }
 
-
-export default App
+export default App;
