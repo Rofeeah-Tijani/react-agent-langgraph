@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from agent import agent
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage
 
 
 app = FastAPI(
@@ -15,18 +16,23 @@ app.add_middleware(
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
-    allow_credentials=True
+    allow_credentials=True,
 )
 
 
+# Request model
+class ChatRequest(BaseModel):
+    message: str
+
+
 @app.post("/chat")
-def chat(message: str):
+def chat(request: ChatRequest):
 
     result = agent.invoke(
         {
             "messages": [
                 HumanMessage(
-                    content=message
+                    content=request.message
                 )
             ]
         },
@@ -37,12 +43,18 @@ def chat(message: str):
         }
     )
 
-
     print("====================")
     print(result)
     print("====================")
 
+    # Extract only the final AI response
+    ai_messages = [
+        msg for msg in result["messages"]
+        if isinstance(msg, AIMessage)
+    ]
+
+    final_response = ai_messages[-1].content
 
     return {
-        "response": str(result)
+        "response": final_response
     }
